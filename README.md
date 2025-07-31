@@ -36,7 +36,8 @@
 - Rename `example.config.json` → `config.json`  
 - Edit `config.json`:  
   - Set `"key_save_play"` to your preferred save key (e.g., `"k"`)  
-  - Set `"video_subfolders"` to true if you want videos to go into sub folders named after the game's shortname, false otherwise
+  - Set `"video_subfolders"` to true if you want videos sorted into subfolders, false otherwise
+  - Set `"result_wait_time"` to how long you want to record the result screen for upon detection (seconds)
   - Add paths to your `.wav` sound files (optional)  
   - Enter your OBS WebSocket info (`host`, `port`, `password`)  
   - Adjust timing if needed (default values usually fine)  
@@ -62,6 +63,7 @@ Each game config includes:
 
 - List of possible process names (executables)  
 - Partial window title to confirm game is active  
+- Short game name used to name saved video files
 - Pixel groups for detecting states (Select, Playing, Result)
 
 You can add your own games by following the format in `example.config.json`.
