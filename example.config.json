@@ -1,0 +1,70 @@
+{
+  "key_save_play": "k",
+  "video_subfolders": true,
+  "result_wait_time": 1.5,
+  "sounds": {
+    "start": "PATH_TO_START_SOUND.wav",
+    "ready": "PATH_TO_READY_SOUND.wav",
+    "saved": "PATH_TO_SAVED_SOUND.wav",
+    "fail": "PATH_TO_FAIL_SOUND.wav"
+  },
+  "obswebsocket": {
+    "host": "localhost",
+    "port": 4455,
+    "password": "YOUR_OBS_PASSWORD"
+  },
+  "check_interval": 0.5,
+  "pixel_tolerance": 15,
+  "games": {
+    "beatmania IIDX 32 Pinky Crush": {
+      "process": ["spice64.exe"],
+      "title": "beatmania IIDX 32 Pinky Crush main",
+      "shortname": "IIDX32",
+      "states": {
+        "Select": [
+          [ [107, 47, 239, 0, 186], [1912, 862, 239, 0, 186] ]
+        ],
+        "Playing": [
+          [ [337, 802, 211, 3, 164], [320, 850, 22, 22, 22] ],
+          [ [1582, 802, 211, 3, 164], [1600, 850, 22, 22, 22] ]
+        ],
+        "Result": [
+          [ [931, 1037, 191, 191, 191] ]
+        ]
+      }
+    },
+    "beatmania IIDX INFINITAS": {
+      "process": ["bm2dx.exe", "hn_bm2dx.exe"],
+      "title": "beatmania IIDX INFINITAS",
+      "shortname": "IIDXINF",
+      "states": {
+        "Select": [
+          [ [310, 125, 1, 213, 255] ]
+        ],
+        "Playing": [
+          [ [339, 840, 17, 17, 18], [53, 20, 155, 155, 155] ],
+          [ [1580, 840, 17, 17, 18], [1867, 20, 155, 155, 155] ]
+        ],
+        "Result": [
+          [ [931, 1037, 204, 204, 204] ]
+        ]
+      }
+    },
+    "Sound Voltex: Exceed Gear": {
+      "process": ["spice64.exe"],
+      "title": "SOUND VOLTEX EXCEED GEAR - Main Screen",
+      "shortname": "SDVXEG",
+      "states": {
+        "Select": [
+          [ [27, 110, 231, 172, 69], [85, 603, 212, 253, 255] ]
+        ],
+        "Playing": [
+          [ [23, 254, 225, 230, 236], [360, 270, 0, 0, 0] ]
+        ],
+        "Result": [
+          [ [45, 863, 225, 231, 236], [359, 1011, 24, 25, 24] ]
+        ]
+      }
+    }
+  }
+}
