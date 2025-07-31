@@ -267,7 +267,7 @@ def main():
                     print("Returned to game window")
 
                 state = check_game_state(current_process, current_title)
-                state_machine.update(state, matched_game_now["shortname"].upper())
+                state_machine.update(state, matched_game_now["shortname"].upper().strip())
 
             elif matched_game_before:
                 print("Exited game window")
