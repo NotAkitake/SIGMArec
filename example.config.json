@@ -3,10 +3,10 @@
   "video_subfolders": true,
   "result_wait_time": 1.5,
   "sounds": {
-    "start": "PATH_TO_START_SOUND.wav",
-    "ready": "PATH_TO_READY_SOUND.wav",
-    "saved": "PATH_TO_SAVED_SOUND.wav",
-    "fail": "PATH_TO_FAIL_SOUND.wav"
+    "start": "./sounds/start.wav",
+    "ready": "./sounds/ready.wav",
+    "saved": "./sounds/saved.wav",
+    "fail": "./sounds/fail.wav"
   },
   "obswebsocket": {
     "host": "localhost",
