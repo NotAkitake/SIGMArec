@@ -13,6 +13,7 @@
     "port": 4455,
     "password": "YOUR_OBS_PASSWORD"
   },
+  "debug": false,
   "check_interval": 0.5,
   "pixel_tolerance": 15,
   "games": {

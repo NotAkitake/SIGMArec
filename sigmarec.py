@@ -48,6 +48,7 @@ class Config:
         self.result_wait_time = float(data.get("result_wait_time", 3))
         self.sounds = SimpleNamespace(**data.get("sounds", {}))
         self.ows = SimpleNamespace(**data.get("obswebsocket", {}))
+        self.debug = bool(data.get("debug", False))
         self.pixel_tolerance = int(data.get("pixel_tolerance", 15))
         self.check_interval = float(data.get("check_interval", 0.5))
         self.games = self._parse_games(data.get("games", {}))
@@ -88,7 +89,7 @@ class Config:
         )
 
 config = Config("config.json")
-DEBUG = True
+DEBUG = config.debug
 
 class OBSController:
     def __init__(self, host, port, password):
