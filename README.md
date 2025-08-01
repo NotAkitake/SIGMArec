@@ -21,7 +21,7 @@
 
 ---
 
-## Setup & Usage (Windows Binary)
+## Setup & Usage
 
 ### 1. Requirements
 
