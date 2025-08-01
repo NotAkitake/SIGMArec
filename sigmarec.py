@@ -22,19 +22,6 @@ def run_as_admin():
 
 run_as_admin()
 
-script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-log_file_path = os.path.join(script_dir, "sigmarec.log")
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        logging.FileHandler(log_file_path, mode="w", encoding="utf-8"),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-
 class Config:
     def __init__(self, path):
         if not os.path.isfile(path):
@@ -89,7 +76,19 @@ class Config:
         )
 
 config = Config("config.json")
-DEBUG = config.debug
+
+script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+log_file_path = os.path.join(script_dir, "sigmarec.log")
+
+logging.basicConfig(
+    level=logging.INFO if config.debug else logging.INFO,
+    format="[%(asctime)s] [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.FileHandler(log_file_path, mode="w", encoding="utf-8"),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 class OBSController:
     def __init__(self, host, port, password):
@@ -104,8 +103,7 @@ class OBSController:
         self.recording = event.getOutputState() == "OBS_WEBSOCKET_OUTPUT_STARTED"
 
     def on_event(self, message):
-        if DEBUG:
-            logging.debug(f"[OBS EVENT] {message}")
+        logging.debug(f"[OBS EVENT] {message}")
 
     def connect(self):
         self.ws.connect()
