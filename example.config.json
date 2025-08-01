@@ -16,23 +16,6 @@
   "check_interval": 0.5,
   "pixel_tolerance": 15,
   "games": {
-    "beatmania IIDX 32 Pinky Crush": {
-      "process": ["spice64.exe"],
-      "title": "beatmania IIDX 32 Pinky Crush main",
-      "shortname": "IIDX32",
-      "states": {
-        "Select": [
-          [ [107, 47, 239, 0, 186], [1912, 862, 239, 0, 186] ]
-        ],
-        "Playing": [
-          [ [337, 802, 211, 3, 164], [320, 850, 22, 22, 22] ],
-          [ [1582, 802, 211, 3, 164], [1600, 850, 22, 22, 22] ]
-        ],
-        "Result": [
-          [ [931, 1037, 191, 191, 191] ]
-        ]
-      }
-    },
     "beatmania IIDX INFINITAS": {
       "process": ["bm2dx.exe", "hn_bm2dx.exe"],
       "title": "beatmania IIDX INFINITAS",
@@ -52,6 +35,39 @@
         "Result": [
           [ [931, 1037, 204, 204, 204] ],
           [ [931, 1037, 0, 0, 0], [942, 1060, 255, 254, 254] ]
+        ]
+      }
+    },
+    "Sound Voltex: Exceed Gear (Konasute)": {
+      "process": ["sv6c.exe"],
+      "title": "SOUND VOLTEX EXCEED GEAR",
+      "shortname": "SDVXEAC",
+      "states": {
+        "Select": [
+          [ [423, 620, 0, 255, 242], [466, 765, 255, 0, 202] ]
+        ],
+        "Playing": [
+          [ [23, 254, 225, 230, 236], [360, 270, 0, 0, 0] ]
+        ],
+        "Result": [
+          [ [233, 1223, 2, 233, 255], [342, 1223, 156, 255, 0], [463, 1223, 255, 0, 231] ]
+        ]
+      }
+    },
+    "beatmania IIDX 32 Pinky Crush": {
+      "process": ["spice64.exe"],
+      "title": "beatmania IIDX 32 Pinky Crush main",
+      "shortname": "IIDX32",
+      "states": {
+        "Select": [
+          [ [107, 47, 239, 0, 186], [1912, 862, 239, 0, 186] ]
+        ],
+        "Playing": [
+          [ [337, 802, 211, 3, 164], [320, 850, 22, 22, 22] ],
+          [ [1582, 802, 211, 3, 164], [1600, 850, 22, 22, 22] ]
+        ],
+        "Result": [
+          [ [931, 1037, 191, 191, 191] ]
         ]
       }
     },
