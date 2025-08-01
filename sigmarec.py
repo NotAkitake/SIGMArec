@@ -8,6 +8,7 @@ import win32gui
 import win32process
 import psutil
 import ctypes
+import logging
 from datetime import datetime
 from obswebsocket import obsws, requests, events
 from PIL import ImageGrab
@@ -20,6 +21,19 @@ def run_as_admin():
         sys.exit(0)
 
 run_as_admin()
+
+script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+log_file_path = os.path.join(script_dir, "sigmarec.log")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.FileHandler(log_file_path, mode="w", encoding="utf-8"),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 class Config:
     def __init__(self, path):
@@ -74,7 +88,7 @@ class Config:
         )
 
 config = Config("config.json")
-DEBUG = False
+DEBUG = True
 
 class OBSController:
     def __init__(self, host, port, password):
@@ -84,29 +98,31 @@ class OBSController:
         self.recording = False
 
     def on_recording_changed(self, event):
+        logging.info(f"[OBS] RecordStateChanged fired: {event}")
         self.output_path = event.getOutputPath()
         self.recording = event.getOutputState() == "OBS_WEBSOCKET_OUTPUT_STARTED"
-        if DEBUG:
-            print(f"[OBS] Recording state changed: {self.recording}, Path: {self.output_path}")
 
     def on_event(self, message):
         if DEBUG:
-            print(f"[OBS EVENT] {message}")
+            logging.debug(f"[OBS EVENT] {message}")
 
     def connect(self):
         self.ws.connect()
         self.ws.register(self.on_event)
         self.ws.register(self.on_recording_changed, events.RecordStateChanged)
-        print("Connected to OBS")
+        logging.info("Connected to OBS")
 
     def start_recording(self):
         self.ws.call(requests.StartRecord())
+        logging.info("Start recording requested")
 
     def stop_recording(self):
         self.ws.call(requests.StopRecord())
+        logging.info("Stop recording requested")
 
     def disconnect(self):
         self.ws.disconnect()
+        logging.info("Disconnected from OBS")
 
 class StateMachine:
     def __init__(self, obs):
@@ -122,7 +138,7 @@ class StateMachine:
 
     def update(self, new_state, current_shortname):
         if new_state != self.current_state:
-            print(f"{self.current_state or 'None'} → {new_state}")
+            logging.info(f"{self.current_state or 'None'} → {new_state}")
             self.last_state = self.current_state
             self.current_state = new_state
 
@@ -130,16 +146,23 @@ class StateMachine:
                 (self.last_state, new_state),
                 self.transitions.get(("*", new_state))
             )
+
             if handler:
-                handler()
+                try:
+                    handler()
+                except Exception as e:
+                    logging.info(f"[StateMachine] Error during transition to {new_state}: {e}")
+                    self.can_save = False
+
         self.poll_state(current_shortname)
 
     def poll_state(self, current_shortname):
         if keyboard.is_pressed(config.key_save_play) and self.can_save:
+            logging.debug(f"Key '{config.key_save_play}' was pressed; attempting to save play")
             name = f"{current_shortname}_{datetime.now():%Y-%m-%d_%H-%M-%S}"
             path = rename_recording(self.obs.lastplay_path, name, current_shortname)
             try_play_sound("saved")
-            print(f"Saved: {path}")
+            logging.info(f"Saved: {path}")
             self.can_save = False
 
     def handle_enter_playing(self):
@@ -160,11 +183,24 @@ class StateMachine:
             self.obs.stop_recording()
             if not wait_recording_stop(self.obs):
                 raise RuntimeError("Recording did not stop in time")
+
+            # Wait until OBSController.output_path is updated
+            wait_time = 0
+            while not self.obs.output_path and wait_time < 3.0:
+                time.sleep(0.1)
+                wait_time += 0.1
+
+            if not self.obs.output_path:
+                logging.warning("[handle_enter_result] Output path is still None after waiting. Skipping save.")
+                return
+
             self.obs.lastplay_path = rename_recording(self.obs.output_path, "lastplay")
             if self.obs.lastplay_path:
                 self.can_save = True
                 try_play_sound("ready")
-                print("Ready to save! Press assigned key on result screen to keep the last play.")
+                logging.info("Ready to save! Press assigned key on result screen to keep the last play.")
+            else:
+                logging.info("[handle_enter_result] Failed to rename last recording.")
 
     def handle_enter_select(self):
         if self.obs.recording:
@@ -205,28 +241,41 @@ def check_game_state(process_name, window_title):
                     return state_name
     return "Unknown"
 
-def rename_recording(path, new_name, shortname = ""):
-    if not os.path.isabs(path):
-        raise ValueError(f"Path must be absolute: {path}")
-    if not os.path.exists(path):
+def rename_recording(path, new_name, shortname=""):
+    if not path:
+        logging.info("[rename_recording] No recording path provided, skipping rename.")
         return None
+    if not os.path.isabs(path):
+        logging.info(f"[rename_recording] Path is not absolute: {path}")
+        return None
+    if not os.path.exists(path):
+        logging.info(f"[rename_recording] File does not exist: {path}")
+        return None
+
     base, ext = os.path.splitext(os.path.basename(path))
-    if config.video_subfolders and new_name != "lastplay" and shortname != "":
+    if config.video_subfolders and new_name != "lastplay" and shortname:
         base_path = os.path.join(os.path.dirname(path), shortname)
         os.makedirs(base_path, exist_ok=True)
         new_path = os.path.join(base_path, new_name + ext)
     else:
         new_path = os.path.join(os.path.dirname(path), new_name + ext)
-    os.replace(path, new_path)
-    return new_path
+
+    try:
+        logging.debug(f"Renaming recording: from '{path}' to '{new_path}'")
+        os.replace(path, new_path)
+        return new_path
+    except Exception as e:
+        logging.error(f"Failed to rename {path} to {new_path}: {e}")
+        return None
 
 def try_play_sound(name):
     path = config.get_sound_path(name)
     if path and os.path.isfile(path):
         try:
+            logging.debug(f"Trying to play sound: {name} from {path}")
             winsound.PlaySound(path, winsound.SND_FILENAME | winsound.SND_ASYNC)
         except Exception as e:
-            print(f"[try_play_sound] {e}")
+            logging.warning(f"[try_play_sound] {e}")
 
 def wait_recording_stop(obs, timeout=3.0):
     for _ in range(int(timeout / 0.25)):
@@ -236,11 +285,13 @@ def wait_recording_stop(obs, timeout=3.0):
     return False
 
 def main():
+    logging.info("Logger initialized. Logging to console and file.")
+
     obs = OBSController(*config.get_obs_config())
     try:
         obs.connect()
     except Exception as e:
-        print(f"[main] {e}")
+        logging.error(f"[main] {e}")
         return
 
     last_process = None
@@ -264,13 +315,13 @@ def main():
             if found:
                 # Print only when returning to game window (was outside before)
                 if not matched_game_before:
-                    print("Returned to game window")
+                    logging.info("Returned to game window")
 
                 state = check_game_state(current_process, current_title)
                 state_machine.update(state, matched_game_now["shortname"].upper().strip())
 
             elif matched_game_before:
-                print("Exited game window")
+                logging.info("Exited game window")
                 if obs.recording:
                     obs.stop_recording()
                     if not wait_recording_stop(obs):
@@ -282,12 +333,13 @@ def main():
             last_process, last_title = current_process, current_title
             time.sleep(config.check_interval)
 
+        logging.info("Exiting gracefully")
+
     except KeyboardInterrupt:
-        print("Shutting down...")
+        logging.info("Shutting down...")
 
     finally:
         obs.disconnect()
-        print("Disconnected from OBS")
 
 if __name__ == "__main__":
     main()
