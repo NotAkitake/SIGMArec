@@ -316,6 +316,7 @@ def main():
                 # Print only when returning to game window (was outside before)
                 if not matched_game_before:
                     logging.info("Returned to game window")
+                    time.sleep(3)
 
                 state = check_game_state(current_process, current_title)
                 state_machine.update(state, matched_game_now["shortname"].upper().strip())
