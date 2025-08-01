@@ -21,11 +21,18 @@
 
 ---
 
-## Setup & Usage
+## Setup & Usage (Windows Binary)
 
 ### 1. Requirements
 
+### Windows (binary)
+
+Simply grab the latest tagged [release](https://github.com/NotAkitake/SIGMArec/releases/) archive and extract it!
+
+### Manual
+
 - Latest Python and pip installed  
+- Clone the project
 - Run in project folder:  
   ```bash
   pip install -r requirements.txt
@@ -47,13 +54,14 @@
 
 - Start OBS, enable WebSocket server (`Tools > WebSocket Server Settings`)  
 - Copy your WebSocket password and paste it in `config.json`  
-- Run the script:  
+- Run `sigmarec.exe` or python script:  
   ```bash
   python sigmarec.py
   ```  
-  *(It will restart as admin to detect keys when the game is focused)*  
-- Play your game! Recording starts/stops automatically.  
-- On the result screen, press your save key to keep your replay.
+  *(Will restart as admin to detect keys when the game is focused)*  
+- Play your game! If it's supported recordings will start/stop automatically.  
+- On the result screen, press your save key to keep your replay.  
+**You need to hold the key a bit longer than you might imagine, as checks happen every half a second by default.**
 
 ---
 
