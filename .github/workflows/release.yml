@@ -1,0 +1,43 @@
+name: Build and Release SIGMArec
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build binary with PyInstaller
+        run: |
+          pyinstaller --onefile sigmarec.py
+          mkdir release
+          copy dist\sigmarec.exe release\
+          copy README.md release\
+          copy example.config.json release\
+          xcopy sounds release\sounds /E /I /Y
+
+      - name: Create ZIP archive
+        run: powershell Compress-Archive -Path release\* -DestinationPath sigmarec-${{ github.ref_name }}.zip
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sigmarec-${{ github.ref_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
