@@ -37,8 +37,9 @@ class Config:
         self.sounds = SimpleNamespace(**data.get("sounds", {}))
         self.ows = SimpleNamespace(**data.get("obswebsocket", {}))
         self.debug = bool(data.get("debug", False))
+        self.detection_frames = int(data.get("detection_frames", 2))
         self.pixel_tolerance = int(data.get("pixel_tolerance", 15))
-        self.check_interval = float(data.get("check_interval", 0.5))
+        self.detection_interval = float(data.get("detection_interval", 0.5))
         self.games = self._parse_games(data.get("games", {}))
 
     def _parse_games(self, raw_games):
@@ -143,33 +144,41 @@ class OBSController:
             self.connected = False
 
 class StateMachine:
-    def __init__(self, obs):
+    def __init__(self, obs, detection_frames=2):
         self.current_state = None
         self.last_state = None
         self.obs = obs
         self.can_save = False
+        self.detection_frames = detection_frames
         self.transitions = {
             ("*", "Playing"): self.handle_enter_playing,
             ("*", "Result"): self.handle_enter_result,
             ("*", "Select"): self.handle_enter_select,
         }
+        self.state_history = []
 
     def update(self, new_state, current_shortname):
-        if new_state != self.current_state:
-            logging.info(f"{self.current_state or 'None'} → {new_state}")
+        self.state_history.append(new_state)
+        if len(self.state_history) > self.detection_frames:
+            self.state_history.pop(0)
+
+        # Only update if the last `detection_frames` states are identical and different from current_state
+        if len(self.state_history) == self.detection_frames and len(set(self.state_history)) == 1 and self.state_history[0] != self.current_state:
+            stable_state = self.state_history[0]
+            logging.info(f"{self.current_state or 'None'} → {stable_state}")
             self.last_state = self.current_state
-            self.current_state = new_state
+            self.current_state = stable_state
 
             handler = self.transitions.get(
-                (self.last_state, new_state),
-                self.transitions.get(("*", new_state))
+                (self.last_state, stable_state),
+                self.transitions.get(("*", stable_state))
             )
 
             if handler:
                 try:
                     handler()
                 except Exception as e:
-                    logging.info(f"[StateMachine] Error during transition to {new_state}: {e}")
+                    logging.info(f"[StateMachine] Error during transition to {stable_state}: {e}")
                     self.can_save = False
 
         self.poll_state(current_shortname)
@@ -342,7 +351,7 @@ def main():
     # Main logic
     last_process = None
     last_title = None
-    state_machine = StateMachine(obs)
+    state_machine = StateMachine(obs, config.detection_frames)
     try:
         while True:
             obs.ensure_connected()
@@ -377,7 +386,7 @@ def main():
                     try_play_sound("fail")
 
             last_process, last_title = current_process, current_title
-            time.sleep(config.check_interval)
+            time.sleep(config.detection_interval)
 
         logging.info("Exiting gracefully")
 

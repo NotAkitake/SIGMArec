@@ -1,7 +1,10 @@
 {
   "key_save_play": "k",
   "video_subfolders": true,
-  "result_wait_time": 1.5,
+  "result_wait_time": 1,
+  "detection_interval": 0.25,
+  "detection_frames": 2,
+  "pixel_tolerance": 0,
   "sounds": {
     "start": "./sounds/start.wav",
     "ready": "./sounds/ready.wav",
@@ -14,8 +17,6 @@
     "password": "YOUR_OBS_PASSWORD"
   },
   "debug": false,
-  "check_interval": 0.5,
-  "pixel_tolerance": 15,
   "games": {
     "beatmania IIDX INFINITAS": {
       "process": ["bm2dx.exe", "hn_bm2dx.exe"],
