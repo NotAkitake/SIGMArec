@@ -21,6 +21,7 @@ def run_as_admin():
         sys.exit(0)
 
 run_as_admin()
+ctypes.windll.kernel32.SetConsoleTitleW("SIGMArec Recorder")
 
 class Config:
     def __init__(self, path):
