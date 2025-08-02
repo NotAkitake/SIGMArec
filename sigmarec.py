@@ -306,6 +306,7 @@ def wait_recording_stop(obs, timeout=3.0):
     return False
 
 def main():
+    global config
     # Initalize logging
     script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
     log_file_path = os.path.join(script_dir, "sigmarec.log")
@@ -380,6 +381,8 @@ def main():
 
         logging.info("Exiting gracefully")
 
+    except Exception as e:
+        logging.error(f"Exception in main loop: {e}", exc_info=True)
     except KeyboardInterrupt:
         logging.info("Shutting down...")
 
