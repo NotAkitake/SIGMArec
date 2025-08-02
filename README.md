@@ -58,15 +58,22 @@ Simply grab the latest tagged [release](https://github.com/NotAkitake/SIGMArec/r
 
 ### 2. Configure
 
+If you're unsure about certain values, default are usually fine.
+
 - Rename `example.config.json` → `config.json`  
 - Edit `config.json`:  
-  - Set `"key_save_play"` to your preferred save key (e.g., `"k"`)  
-  - Set `"video_subfolders"` to true if you want videos sorted into subfolders, false otherwise
-  - Set `"result_wait_time"` to how long you want to record the result screen for upon detection (seconds)
-  - Add paths to your `.wav` sound files (optional)  
-  - Enter your OBS WebSocket info (`host`, `port`, `password`)  
-  - Adjust timing if needed (default values usually fine)  
-- **No need to touch pixel detection unless adding new games!**
+  - Set `"key_save_play"` to the keyboard key you want to use for saving replays (e.g., `"k"`).  
+  - Set `"video_subfolders"` to `true` to organize videos into per-game folders, or `false` to save all in one place.  
+  - Set `"result_wait_time"` to how long to keep recording after detecting the result screen (in seconds).  
+  - Set `"detection_interval"` to how often frames are checked for state changes (in seconds).  
+  - Set `"detection_frames"` to how many consecutive frames must agree on a state before it is accepted (helps prevent false positives).  
+  - Set `"pixel_tolerance"` to the maximum allowed difference between expected and actual RGB values.  
+    For example, with a tolerance of `5`, a red value of `245` would match anything from `240` to `250`.  
+    Useful for handling small visual variations, but shouldn't be needed in most cases.  
+  - Add paths to your custom `.wav` sound files (optional).  
+  - Fill in your OBS WebSocket connection details: `"host"`, `"port"`, and `"password"`.  
+
+- **No need to modify pixel groups unless you're adding support for new games.**
 
 ### 3. Run
 
