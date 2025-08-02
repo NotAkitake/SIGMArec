@@ -14,10 +14,13 @@
 
 ## Supported Games
 
-- beatmania IIDX 32 Pinky Crush  
-- beatmania IIDX INFINITAS  
-- Sound Voltex: Exceed Gear
+- beatmania IIDX INFINITAS
+- Sound Voltex Exceed Gear Konasute (I hope, need confirmation the pixels are correct)
+- beatmania IIDX 32 Pinky Crush
+- Sound Voltex Exceed Gear
 - *literally any game you want to add pixels for*
+
+*More games will be supported out of the box over time..*
 
 ---
 
