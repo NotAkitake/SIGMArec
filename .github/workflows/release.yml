@@ -25,7 +25,7 @@ jobs:
 
       - name: Build binary with PyInstaller
         run: |
-          pyinstaller --onefile sigmarec.py
+          pyinstaller --onefile --icon=sigmarec.ico sigmarec.py
           mkdir release
           copy dist\sigmarec.exe release\
           copy README.md release\
