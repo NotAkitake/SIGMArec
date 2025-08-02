@@ -76,27 +76,17 @@ class Config:
             getattr(self.ows, "password", "")
         )
 
-config = Config("config.json")
-
-script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-log_file_path = os.path.join(script_dir, "sigmarec.log")
-
-logging.basicConfig(
-    level=logging.INFO if config.debug else logging.INFO,
-    format="[%(asctime)s] [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        logging.FileHandler(log_file_path, mode="w", encoding="utf-8"),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-
 class OBSController:
     def __init__(self, host, port, password):
-        self.ws = obsws(host, port, password)
+        self.host = host
+        self.port = port
+        self.password = password
+        self.ws = None
         self.output_path = ""
         self.lastplay_path = None
         self.recording = False
+        self.connected = False
+        self._reconnecting = False
 
     def on_recording_changed(self, event):
         logging.info(f"[OBS] RecordStateChanged fired: {event}")
@@ -106,23 +96,51 @@ class OBSController:
     def on_event(self, message):
         logging.debug(f"[OBS EVENT] {message}")
 
+    def connect_loop(self):
+        while True:
+            try:
+                self.ws = obsws(self.host, self.port, self.password)
+                self.ws.connect()
+                self.ws.call(requests.StopRecord())
+                self.ws.register(self.on_event)
+                self.ws.register(self.on_recording_changed, events.RecordStateChanged)
+                self.connected = True
+                self._reconnecting = False
+                break
+            except Exception as e:
+                if not self._reconnecting:
+                    logging.warning(f"OBS connection failed! Retrying every 3s...")
+                    self._reconnecting = True
+                time.sleep(3)
+
     def connect(self):
-        self.ws.connect()
-        self.ws.register(self.on_event)
-        self.ws.register(self.on_recording_changed, events.RecordStateChanged)
-        logging.info("Connected to OBS")
+        self.connect_loop()
+
+    def ensure_connected(self):
+        if not self.ws or not self.connected:
+            self.connect_loop()
+            return
+        try:
+            self.ws.call(requests.GetVersion())
+        except Exception as e:
+            self.connected = False
+            self.connect_loop()
 
     def start_recording(self):
+        self.ensure_connected()
         self.ws.call(requests.StartRecord())
         logging.info("Start recording requested")
 
     def stop_recording(self):
+        self.ensure_connected()
         self.ws.call(requests.StopRecord())
         logging.info("Stop recording requested")
 
     def disconnect(self):
-        self.ws.disconnect()
-        logging.info("Disconnected from OBS")
+        if self.ws and self.connected:
+            self.ws.disconnect()
+            logging.info("Disconnected from OBS")
+            self.connected = False
 
 class StateMachine:
     def __init__(self, obs):
@@ -184,7 +202,6 @@ class StateMachine:
             if not wait_recording_stop(self.obs):
                 raise RuntimeError("Recording did not stop in time")
 
-            # Wait until OBSController.output_path is updated
             wait_time = 0
             while not self.obs.output_path and wait_time < 3.0:
                 time.sleep(0.1)
@@ -211,6 +228,10 @@ class StateMachine:
                 os.remove(self.obs.output_path)
             try_play_sound("fail")
         self.can_save = False
+
+class LoggingFilter(logging.Filter):
+    def filter(self, record):
+        return "GetVersion" not in record.getMessage()
 
 def get_foreground_window_info():
     hwnd = win32gui.GetForegroundWindow()
@@ -285,21 +306,45 @@ def wait_recording_stop(obs, timeout=3.0):
     return False
 
 def main():
-    logging.info("Logger initialized. Logging to console and file.")
+    # Initalize logging
+    script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    log_file_path = os.path.join(script_dir, "sigmarec.log")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s] [%(levelname)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[
+            logging.FileHandler(log_file_path, mode="w", encoding="utf-8"),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+    logging.getLogger().addFilter(LoggingFilter())
+    for logger_name in logging.root.manager.loggerDict:
+        if logger_name.startswith("obswebsocket"):
+            logging.getLogger(logger_name).addFilter(LoggingFilter())
+    logging.info("Logger initialized.")
 
-    obs = OBSController(*config.get_obs_config())
+    # Try load config
     try:
-        obs.connect()
+        config = Config("config.json")
     except Exception as e:
-        logging.error(f"[main] {e}")
+        logging.error(f"Failed to load config: {e}")
+        input("Press Enter to exit...")
         return
 
+    # Adjust logging level based on config
+    logging.getLogger().setLevel(logging.DEBUG if config.debug else logging.INFO)
+
+    # Create OBS Controller
+    obs = OBSController(*config.get_obs_config())
+
+    # Main logic
     last_process = None
     last_title = None
     state_machine = StateMachine(obs)
-
     try:
         while True:
+            obs.ensure_connected()
             current_process, current_title = get_foreground_window_info()
             found = False
             for game in config.games:
@@ -313,7 +358,6 @@ def main():
             )
 
             if found:
-                # Print only when returning to game window (was outside before)
                 if not matched_game_before:
                     logging.info("Returned to game window")
                     time.sleep(3)
