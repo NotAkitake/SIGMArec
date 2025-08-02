@@ -21,6 +21,24 @@
 
 ---
 
+## Security & Antivirus Warning
+
+Because SIGMArec:
+
+- Runs with administrator privileges (to detect keypresses reliably).   
+- Periodically takes screenshots of your screen to detect game states.
+
+**Windows Defender or other antivirus software may flag or block the program as suspicious or potentially harmful.**
+
+These behaviors are common in malware but harmless in SIGMArec, hence the false positive detection.
+
+If this happens you can either:
+
+- Add an exclusion in Windows Defender for the SIGMArec executable.
+- Use the python script directly rather than the window binary.
+
+---
+
 ## Setup & Usage
 
 ### 1. Requirements
