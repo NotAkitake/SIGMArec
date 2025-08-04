@@ -1,6 +1,7 @@
 {
   "key_save_play": "k",
   "video_subfolders": true,
+  "screenshot_results": true,
   "result_wait_time": 1,
   "detection_interval": 0.25,
   "detection_frames": 2,

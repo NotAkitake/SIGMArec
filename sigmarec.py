@@ -33,6 +33,7 @@ class Config:
 
         self.key_save_play = data.get("key_save_play", "k")
         self.video_subfolders = bool(data.get("video_subfolders", False))
+        self.screenshot_results = bool(data.get("screenshot_results", True))
         self.result_wait_time = float(data.get("result_wait_time", 3))
         self.sounds = SimpleNamespace(**data.get("sounds", {}))
         self.ows = SimpleNamespace(**data.get("obswebsocket", {}))
@@ -220,6 +221,10 @@ class StateMachine:
                 logging.warning("[handle_enter_result] Output path is still None after waiting. Skipping save.")
                 return
 
+            if config.screenshot_results:
+                screenshot_path = os.path.join(os.path.dirname(self.obs.output_path), "lastplay.png")
+                save_result_screenshot(screenshot_path)
+
             self.obs.lastplay_path = rename_recording(self.obs.output_path, "lastplay")
             if self.obs.lastplay_path:
                 self.can_save = True
@@ -241,6 +246,14 @@ class StateMachine:
 class LoggingFilter(logging.Filter):
     def filter(self, record):
         return "GetVersion" not in record.getMessage()
+
+def save_result_screenshot(path):
+    try:
+        img = ImageGrab.grab()
+        img.save(path)
+        logging.info(f"Screenshot saved to {path}")
+    except Exception as e:
+        logging.error(f"Failed to save screenshot: {e}")
 
 def get_foreground_window_info():
     hwnd = win32gui.GetForegroundWindow()
@@ -283,16 +296,26 @@ def rename_recording(path, new_name, shortname=""):
         return None
 
     base, ext = os.path.splitext(os.path.basename(path))
+    output_dir = os.path.dirname(path)
+
     if config.video_subfolders and new_name != "lastplay" and shortname:
-        base_path = os.path.join(os.path.dirname(path), shortname)
+        base_path = os.path.join(output_dir, shortname)
         os.makedirs(base_path, exist_ok=True)
         new_path = os.path.join(base_path, new_name + ext)
+        new_img_path = os.path.join(base_path, new_name + ".png")
     else:
-        new_path = os.path.join(os.path.dirname(path), new_name + ext)
+        new_path = os.path.join(output_dir, new_name + ext)
+        new_img_path = os.path.join(output_dir, new_name + ".png")
 
     try:
         logging.debug(f"Renaming recording: from '{path}' to '{new_path}'")
         os.replace(path, new_path)
+
+        old_img_path = os.path.join(output_dir, "lastplay.png")
+        if os.path.exists(old_img_path):
+            os.replace(old_img_path, new_img_path)
+            logging.info(f"Renamed screenshot to {new_img_path}")
+
         return new_path
     except Exception as e:
         logging.error(f"Failed to rename {path} to {new_path}: {e}")

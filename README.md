@@ -65,6 +65,7 @@ If you're unsure about certain values, default are usually fine.
   - Set `"key_save_play"` to the keyboard key you want to use for saving replays (e.g., `"k"`).  
   - Set `"video_subfolders"` to `true` to organize videos into per-game folders, or `false` to save all in one place.  
   - Set `"result_wait_time"` to how long to keep recording after detecting the result screen (in seconds).  
+  - Set `"screenshot_results"` to `true` if you want a screenshot of your result screen next to your video, otherwise `false`.
   - Set `"detection_interval"` to how often frames are checked for state changes (in seconds).  
   - Set `"detection_frames"` to how many consecutive frames must agree on a state before it is accepted (helps prevent false positives).  
   - Set `"pixel_tolerance"` to the maximum allowed difference between expected and actual RGB values.  
