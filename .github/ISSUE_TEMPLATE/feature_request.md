@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for SIGMArec
 title: "[REQ]"
-labels: enhancement
+labels: enhancement, not checked
 assignees: ''
 
 ---
