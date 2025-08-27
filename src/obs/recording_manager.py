@@ -146,28 +146,6 @@ class RecordingManager(IRecordingManager):
             and self._current_lastplay_path.exists()
         )
 
-    def get_lastplay_info(self) -> Optional[dict]:
-        """
-        Get information about the current lastplay file.
-
-        Returns:
-            Dictionary with lastplay info or None if no lastplay
-        """
-        if not self.has_lastplay():
-            return None
-
-        path = self._current_lastplay_path
-        stat = path.stat()
-
-        return {
-            "path": str(path),
-            "name": path.name,
-            "size_mb": round(stat.st_size / (1024 * 1024), 2),
-            "created": datetime.fromtimestamp(stat.st_ctime).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
-        }
-
     def _generate_filename(
         self, original_path: Path, game: Optional[Game] = None
     ) -> str:
@@ -243,6 +221,8 @@ class RecordingManager(IRecordingManager):
             video_path: Path to the lastplay video file
         """
         screenshot = self.screen.capture_focused_window()
+        if not screenshot:
+            return None
 
         recording_dir = video_path.parent
         thumbnail_path = recording_dir / "lastplay.png"
