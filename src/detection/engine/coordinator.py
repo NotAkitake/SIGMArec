@@ -155,14 +155,9 @@ class DetectionCoordinator(IDetectionEngine):
             Tuple of (success, message)
         """
         current_game = self.state_manager.get_current_game()
-        success, target_dir, filename = self.recording_manager.save_lastplay(
+        success, message = self.recording_manager.save_lastplay(
             current_game
         )
-
-        if success:
-            message = f"Lastplay saved to {target_dir}/{filename}"
-        else:
-            message = target_dir
 
         return success, message
 

@@ -99,7 +99,7 @@ class RecordingManager(IRecordingManager):
 
         return str(lastplay_path)
 
-    def save_lastplay(self, game: Optional[Game] = None) -> Tuple[bool, str]:
+    def save_lastplay(self, game: Optional[Game]) -> Tuple[bool, str]:
         """
         Save the current lastplay file with proper organization.
 
@@ -117,6 +117,9 @@ class RecordingManager(IRecordingManager):
 
         lastplay_path = self._current_lastplay_path
 
+        if not lastplay_path:
+            return False, "No lastplay found"
+
         new_filename = self._generate_filename(lastplay_path, game)
 
         target_dir = self._get_organized_directory(game)
@@ -129,7 +132,7 @@ class RecordingManager(IRecordingManager):
         if self._current_thumbnail_path and self._current_thumbnail_path.exists():
             self._organize_thumbnail(final_path)
 
-        return True, target_dir.name, new_filename
+        return True, f"Lastplay saved to '{target_dir.name}/{new_filename}'"
 
     def has_lastplay(self) -> bool:
         """
