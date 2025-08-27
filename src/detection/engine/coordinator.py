@@ -56,7 +56,9 @@ class DetectionCoordinator(IDetectionEngine):
 
         self.state_manager = StateManager()
         self.game_detector = game_detector
-        self.pixel_detector = PixelStateDetector(settings.detections_required)
+        self.pixel_detector = PixelStateDetector(
+            game_detector.screen, settings.detections_required
+        )
         self.log_detector = LogStateDetector(settings.detections_required)
         self.video_processor = video_processor
         self.recording_processor = recording_processor
@@ -153,7 +155,16 @@ class DetectionCoordinator(IDetectionEngine):
             Tuple of (success, message)
         """
         current_game = self.state_manager.get_current_game()
-        return self.recording_manager.save_lastplay(current_game)
+        success, target_dir, filename = self.recording_manager.save_lastplay(
+            current_game
+        )
+
+        if success:
+            message = f"Lastplay saved to {target_dir}/{filename}"
+        else:
+            message = target_dir
+
+        return success, message
 
     def get_current_status(self) -> Dict[str, Any]:
         """

@@ -15,8 +15,8 @@ class PixelStateDetector(BaseStateDetector):
 
     def __init__(
         self,
+        screen_capture_service: ScreenCaptureService,
         detection_threshold: int = 2,
-        screen_capture_service: ScreenCaptureService = None,
     ):
         super().__init__(detection_threshold)
         self.screen = screen_capture_service

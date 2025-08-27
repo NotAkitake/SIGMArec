@@ -136,10 +136,10 @@ class Application:
                     sound_service.play_failed()
             return
 
-        success, target_dir, filename = detection_engine.save_current_lastplay()
+        success, message = detection_engine.save_current_lastplay()
 
         if success:
-            logging.info("Lastplay saved to '%s/%s'", target_dir, filename)
+            logging.info(message)
             if sound_service:
                 sound_service.play_saved()
         else:

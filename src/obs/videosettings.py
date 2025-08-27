@@ -13,8 +13,8 @@ class OBSVideoSettings:
     base_height: int
     output_width: int
     output_height: int
-    fps_numerator: int
-    fps_denominator: int
+    fps_numerator: float
+    fps_denominator: float
 
     def __eq__(self, other: "OBSVideoSettings") -> bool:
         return (

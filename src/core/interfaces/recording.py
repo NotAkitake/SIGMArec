@@ -33,7 +33,7 @@ class IRecordingManager(ABC):
         """Handle a completed recording."""
 
     @abstractmethod
-    def save_lastplay(self, game: Optional[Game]) -> Tuple[bool, str]:
+    def save_lastplay(self, game: Optional[Game]) -> Tuple[bool, str, str]:
         """Save the current lastplay."""
 
     @abstractmethod
