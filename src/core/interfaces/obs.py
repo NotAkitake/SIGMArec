@@ -47,6 +47,10 @@ class IOBSController(ABC):
         """Get current video settings."""
 
     @abstractmethod
+    def get_game_video_settings(self) -> Optional["OBSVideoSettings"]:
+        """Get current game video settings."""
+
+    @abstractmethod
     def set_current_scene(self, scene_name: str) -> None:
         """Switch to specified scene."""
 
