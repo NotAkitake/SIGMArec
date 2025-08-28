@@ -4,7 +4,7 @@ Recording management interfaces.
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 from src.games import Game
 
@@ -39,7 +39,3 @@ class IRecordingManager(ABC):
     @abstractmethod
     def has_lastplay(self) -> bool:
         """Check if lastplay is available."""
-
-    @abstractmethod
-    def get_lastplay_info(self) -> Optional[Dict[str, Any]]:
-        """Get information about current lastplay."""
