@@ -7,7 +7,7 @@ Provides a simple interface for interacting with OBS.
 import logging
 import threading
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable, List, Optional
 
 import obsws_python as obsws
@@ -51,7 +51,7 @@ class OBSController(IOBSController):
     recording_active: bool = False
 
     recording_completed_callback: Optional[Callable[[str], None]] = None
-    _event_handlers: List[IOBSEventHandler] = []
+    _event_handlers: List[IOBSEventHandler] = field(default_factory=list)
 
     _initial_connection_thread: Optional[threading.Thread] = None
 
