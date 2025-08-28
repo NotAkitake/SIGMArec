@@ -51,7 +51,7 @@ class OBSController(IOBSController):
     recording_active: bool = False
 
     recording_completed_callback: Optional[Callable[[str], None]] = None
-    _event_handlers: List[IOBSEventHandler] = None
+    _event_handlers: List[IOBSEventHandler] = []
 
     _initial_connection_thread: Optional[threading.Thread] = None
 
